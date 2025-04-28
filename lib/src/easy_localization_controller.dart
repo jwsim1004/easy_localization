@@ -227,6 +227,14 @@ class EasyLocalizationController extends ChangeNotifier {
     EasyLocalization.logger('Reset locale to $locale while the platform locale is $_deviceLocale and the fallback locale is $_fallbackLocale');
     await setLocale(locale);
   }
+
+  ///강제 리로드 변수 설정
+  bool _forceReload = false;
+  bool get forceReload => _forceReload;
+  void setForceReload(bool reload) {
+    _forceReload = reload;
+    EasyLocalization.logger('Force reload $reload changed');
+  }
 }
 
 @visibleForTesting

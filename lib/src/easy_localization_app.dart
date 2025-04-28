@@ -289,9 +289,20 @@ class _EasyLocalizationProvider extends InheritedWidget {
   /// Reset locale to platform locale
   Future<void> resetLocale() => _localeState.resetLocale();
 
+  /// Force update app locale (강제 리로드)
+  Future<void> forceUpdateLocale(Locale? locale) async {
+    EasyLocalization.logger.debug('Force Update Locale');
+    if(locale != null) {
+      assert(parent.supportedLocales.contains(locale));
+    }
+    _localeState.setForceReload(true);
+    await _localeState.setLocale(locale ?? _localeState.locale);
+  }
+
   @override
   bool updateShouldNotify(_EasyLocalizationProvider oldWidget) {
-    return oldWidget.currentLocale != locale;
+    /// 강제 리로드 변수가 †rue 면 notify 한다
+    return oldWidget.currentLocale != locale || _localeState.forceReload;
   }
 
   static _EasyLocalizationProvider? of(BuildContext context) =>
@@ -334,9 +345,18 @@ class _EasyLocalizationDelegate extends LocalizationsDelegate<Localization> {
           useFallbackTranslationsForEmptyResources,
       ignorePluralRules: ignorePluralRules,
     );
+
+    /// 로드 완료 후, 강제 리로드 변수 false 로 설정
+    if(localizationController!.forceReload) {
+      localizationController!.setForceReload(false);
+    }
+
     return Future.value(Localization.instance);
   }
 
   @override
-  bool shouldReload(LocalizationsDelegate<Localization> old) => false;
+  bool shouldReload(LocalizationsDelegate<Localization> old) {
+    /// 강제 리로드 변수가 †rue 면 reload 한다
+    return localizationController?.forceReload ?? false;
+  }
 }
